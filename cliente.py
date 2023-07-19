@@ -2,11 +2,11 @@ class Cliente:
     
     __slots__ = ['_id', '_nome', '_endereco', '_cpf']
     
-    _numero = 1
+    _numero = 0
     
     def __init__(self, nome, endereco, cpf):
-        self._id = Cliente._numero
         Cliente._numero += 1
+        self._id = f'{Cliente._numero:06d}'
         self._nome = nome
         self._endereco = endereco
         self._cpf = cpf

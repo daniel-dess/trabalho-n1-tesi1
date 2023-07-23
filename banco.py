@@ -1,7 +1,8 @@
 from conta_poupanca import ContaPoupanca
 
-
 class Banco:    
+    
+    _bancos = []
     
     __slots__ = ['_numero', '_nome', '_contas', '_clientes', '_taxa_cp','_taxa_cc']
     
@@ -10,8 +11,8 @@ class Banco:
         self._nome = nome
         self._contas = []
         self._clientes = []
-        self._taxa_cp = 0
-        self._taxa_cc = 0
+        self._taxa_cp = 0.0
+        self._taxa_cc = 0.0
         
     @property
     def numero(self):
@@ -62,4 +63,4 @@ class Banco:
     def rendimento_cp(self):
         for conta in self.contas:
             if isinstance(conta, ContaPoupanca):
-                conta.saldo += conta.saldo * self.taxa_cp
+                conta.saldo += conta.saldo * (self.taxa_cp / 100)

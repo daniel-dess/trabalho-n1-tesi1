@@ -1,3 +1,4 @@
+from functools import reduce
 import tkinter as tk
 from tkinter import filedialog as fd, messagebox, Button, ttk
 from banco import Banco
@@ -16,27 +17,27 @@ class Tela():
         self.janela.minsize(800, 600)
         self.janela.config(background='#4D8EBB')
         # ----------------------------
-        # b1 = Banco('123', 'Gringotes')
-        # b2 = Banco('231', 'Banco do Brasil')
-        # b3 = Banco('312', 'Banco da Ufac')
+        b1 = Banco('123', 'Gringotes')
+        b2 = Banco('231', 'Banco do Brasil')
+        b3 = Banco('312', 'Banco da Ufac')
+        #----------------------------
+        self.banco_em_uso = b2
+        #----------------------------
+        Banco._bancos = [b1, b2, b3]
+        #----------------------------
+        cli1 = Cliente('Daniel', 'Rua dos Bobos, nº 0', '123')
+        cli2 = Cliente('Erika', 'Rua Carioca, nº 42', '321')
+        cli3 = Cliente('Jo Cely', 'Rua dos Doces, nº 3', '312')
         # #----------------------------
-        # self.banco_em_uso = b2
-        # #----------------------------
-        # Banco._bancos = [b1, b2, b3]
-        # #----------------------------
-        # cli1 = Cliente('Daniel', 'Rua dos Bobos, nº 0', '123')
-        # cli2 = Cliente('Erika', 'Rua Carioca, nº 42', '321')
-        # cli3 = Cliente('Jo Cely', 'Rua dos Doces, nº 3', '312')
-        # # #----------------------------
-        # b1._clientes = [cli1, cli2]
-        # b2.clientes.append(cli3)
-        # #----------------------------
-        # c1 = ContaCorrente(cli1)
-        # c2 = ContaPoupanca(cli2)
-        # c3 = ContaCorrente(cli3)
-        # #----------------------------
-        # b1._contas = [c1, c2]
-        # b2._contas = [c3]
+        b1._clientes = [cli1, cli2]
+        b2.clientes.append(cli3)
+        #----------------------------
+        c1 = ContaCorrente(cli1)
+        c2 = ContaPoupanca(cli2)
+        c3 = ContaCorrente(cli3)
+        #----------------------------
+        b1._contas = [c1, c2]
+        b2._contas = [c3]
         
         self.frm = tk.Frame(self.janela, background='white', width=800)
         self.frm.pack(fill=tk.Y, expand=True)
@@ -147,14 +148,14 @@ class Tela():
      
     def cadastrar_banco(self):
 
-        self.tlv_bancos = tk.Toplevel()
-        self.tlv_bancos.title('Cadastro Banco')
-        self.tlv_bancos.geometry('450x450')
-        self.tlv_bancos.grab_set()
-        self.tlv_bancos.grid_columnconfigure(0, weight=1)
-        self.tlv_bancos.grid_rowconfigure(0, weight=1)
+        self.top_cadastrar_banco = tk.Toplevel()
+        self.top_cadastrar_banco.title('Cadastro Banco')
+        self.top_cadastrar_banco.geometry('450x450')
+        self.top_cadastrar_banco.grab_set()
+        self.top_cadastrar_banco.grid_columnconfigure(0, weight=1)
+        self.top_cadastrar_banco.grid_rowconfigure(0, weight=1)
         
-        lbl_frm = tk.LabelFrame(self.tlv_bancos, text='Insira os dados do banco', width=200, height=200)
+        lbl_frm = tk.LabelFrame(self.top_cadastrar_banco, text='Insira os dados do banco', width=200, height=200)
         lbl_frm.grid(row=0, column=0)
         
         lbl_nome_banco = tk.Label(lbl_frm, text='Razão social:')
@@ -172,7 +173,7 @@ class Tela():
         btn_banco = tk.Button(lbl_frm, text='Cadastrar Banco', command=self.confirmar_cadastro_banco)
         btn_banco.grid(row=2, columnspan=2, padx=10, pady=10)
         
-        self.config_text(self.tlv_bancos)
+        self.config_text(self.top_cadastrar_banco)
     
     def confirmar_cadastro_banco(self):
         
@@ -180,13 +181,17 @@ class Tela():
         nome_banco = self.ent_nome_banco.get()
         
         if numero_banco == '' or nome_banco == '':
-            messagebox.showerror('Dados Incompletos', 'Os campos Razão Social e CNPJ são obrigatórios!', parent=self.tlv_bancos)
+            messagebox.showerror('Dados Incompletos', 'Os campos Razão Social e CNPJ são obrigatórios!', parent=self.top_cadastrar_banco)
         else:
-            self.banco_em_uso = Banco(numero_banco, nome_banco)
-            Banco._bancos.append(self.banco_em_uso)
-            messagebox.showinfo('Confirmação', f'Banco {self.banco_em_uso.nome} cadastrado com sucesso!', parent=self.tlv_bancos)
-            self.janela_bancos()
-            self.tlv_bancos.destroy()
+            mesmo_cnpj = [banco for banco in Banco._bancos if banco.numero == numero_banco]
+            if mesmo_cnpj:
+                messagebox.showerror('Banco existente', 'Já existe um banco com o mesmo CNPJ!', parent=self.top_cadastrar_banco)
+            else:
+                self.banco_em_uso = Banco(numero_banco, nome_banco)
+                Banco._bancos.append(self.banco_em_uso)
+                messagebox.showinfo('Confirmação', f'Banco {self.banco_em_uso.nome} cadastrado com sucesso!', parent=self.top_cadastrar_banco)
+                self.janela_bancos()
+                self.top_cadastrar_banco.destroy()
     
     def editar_banco(self):
         
@@ -346,19 +351,40 @@ class Tela():
         
         self.config_text(self.top_cadastrar_cliente)
 
+    def cpf_valido(self, cpf):
+        copia_cpf = [i for i in cpf if i.isdigit()]
+        if len(copia_cpf) == 11:
+            cpf_valido = copia_cpf[:9]
+            a = reduce(lambda x,y: x+y, [int(cpf_valido[i])*(10-i) for i in range(9)]) % 11
+            if a < 2:
+                cpf_valido.append('0')
+            else:
+                cpf_valido = cpf_valido.append(str(11-a))
+            b = reduce(lambda x,y: x+y, [int(cpf_valido[i])*(11-i) for i in range(10)]) %11
+            if b < 2:
+                cpf_valido = cpf_valido.append('0')
+            else:
+                cpf_valido.append(str(11-b))
+                
+            if copia_cpf == cpf_valido:
+                return True
+        return False
+    
     def confirmar_cadastro_cliente(self):
         nome = self.ent_nome_cliente.get()
         endereco = self.ent_endereco.get()
         cpf = self.ent_cpf_cliente.get()
-        
-        self.cliente = Cliente(nome, endereco, cpf)
-        self.banco_em_uso.adicionar_cliente(self.cliente)
-        
         if nome == '' or endereco == '' or cpf == '':
-            messagebox.showinfo('Aviso', 'Por favor, todos os campos são obrigatórios.', parent=self.top_cadastrar_cliente)
+            messagebox.showinfo('Aviso', 'Todos os campos são obrigatórios.')
         else:
-            self.janela_clientes()
-            self.top_cadastrar_cliente.destroy()
+            if self.cpf_valido(cpf):
+                self.cliente = Cliente(nome, endereco, cpf)
+                self.banco_em_uso.adicionar_cliente(self.cliente)
+                self.janela_clientes()
+                messagebox.showinfo('Confirmação', f'Cliente {self.cliente.nome} cadastrado com sucesso!', parent=self.top_cadastrar_cliente)
+                self.top_cadastrar_cliente.destroy()
+            else:
+                messagebox.showinfo('Aviso', 'Insira um CPF válido.', parent=self.top_cadastrar_cliente)
 
     def editar_cliente(self):
         
@@ -431,19 +457,18 @@ class Tela():
             messagebox.showinfo('Aviso', 'Selecione um cliente para removê-lo!')
         elif len(selecao) > 1:
             messagebox.showinfo('Aviso', 'Selecione apenas um cliente para removê-lo!')
-            self.janela_clientes()
         else:
             cli = [cliente for cliente in self.banco_em_uso.clientes if selecao[0][0] == cliente.id][0]
-            contas_ativas = [conta for conta in self.banco_em_uso.contas if conta.titular.id == cli.id and conta.status]
-            if contas_ativas:
-                messagebox.showinfo('Aviso', f'Não é possível remover o cliente {cli.nome} pois há contas ativas me seu nome.')
+            contas = [conta for conta in self.banco_em_uso.contas if conta.titular.id == cli.id]
+            if contas:
+                messagebox.showinfo('Aviso', f'Não é possível remover o cliente {cli.nome} pois há contas me seu nome.')
             else:
                 if messagebox.askyesno('Confirmação remoção', f'Deseja mesmo remover o cliente {cli.nome}?'):
                     self.banco_em_uso.clientes.remove(cli)
                     c = [conta for conta in self.banco_em_uso.contas if conta.titular.id == cli.id]
                     for conta in c:
                         self.banco_em_uso.contas.remove(conta)
-            self.janela_clientes()
+        self.janela_clientes()
 
     # Contas
     def janela_contas(self):
@@ -510,15 +535,21 @@ class Tela():
             self.config_text(self.frm)
     
     def abrir_conta(self):
+        try:
+            selecao = self.tvw_contas.selection()
+        except:
+            selecao = []
         self.janela_contas()
-        contas_selecionadas = [self.tvw_contas.item(conta, 'values') for conta in self.tvw_contas.selection()]
-        if len(contas_selecionadas) == 1:
-            conta = [c for c in self.banco_em_uso.contas if c.id == contas_selecionadas[0][0]][0]
+        if len(selecao) == 1:
+            conta_selecionada = self.tvw_contas.item(selecao, 'values')
+            conta = [c for c in self.banco_em_uso.contas if c.id == conta_selecionada[0]][0]
             if not conta.status:
                 messagebox.showinfo('Aviso', f'A conta nº {conta.id} foi reaberta!')
                 conta.status = True
                 self.janela_contas()
-        elif len(contas_selecionadas) > 1:
+            else:
+                messagebox.showinfo('Aviso', f'A conta nº {conta.id} já está aberta!')
+        elif len(selecao) > 1:
             messagebox.showinfo('Aviso', 'Selecione apenas uma conta para reabrir')
         else:
             self.top_abrir_conta = tk.Toplevel()
@@ -572,20 +603,20 @@ class Tela():
             self.janela_contas()
 
     def encerrar_conta(self):
-        contas_selecionadas = [(self.tvw_contas.item(conta, 'values'), conta) for conta in self.tvw_contas.selection()]
-        if len(contas_selecionadas) == 0:
+        selecao = [self.tvw_contas.item(conta, 'values') for conta in self.tvw_contas.selection()]
+        print(selecao)
+        if len(selecao) == 0:
             messagebox.showinfo('Aviso', 'Selecione uma conta para encerrar!')
-        elif len(contas_selecionadas) > 1:
+        elif len(selecao) > 1:
             messagebox.showinfo('Aviso', 'Selecione apenas uma conta para encerrar!')
         else:
-            for conta_selecionada in contas_selecionadas:
-                conta = [conta for conta in self.banco_em_uso.contas if conta_selecionada[0][0] == str(conta.id)][0]
-                if not conta.saldo:
-                    messagebox.showinfo('Aviso', f'A conta nº {conta.id} foi encerrada!')
+            conta = [conta for conta in self.banco_em_uso.contas if selecao[0][0] == str(conta.id)][0]
+            if not conta.saldo:
+                if messagebox.askyesno('Confirmação', f'Confirmar o encerramento da conta nº {conta.id}?'):
                     conta.status = False
-                    self.janela_contas()
-                else:
-                    messagebox.showinfo('Aviso', f'Não é possível encerrar a conta {conta.id} pois ainda possui saldo.')
+            else:
+                messagebox.showinfo('Aviso', f'Não é possível encerrar a conta {conta.id} pois ainda possui saldo.')
+        self.janela_contas()
 
     def operacoes(self):
         self.contas_selecionadas = [(self.tvw_contas.item(conta, 'values'), conta) for conta in self.tvw_contas.selection()]
@@ -632,22 +663,30 @@ class Tela():
     def operacao_depositar(self):
         conta = [c for c in self.banco_em_uso.contas if c.id == self.contas_selecionadas[0][0][0]][0]
         valor = float(self.valor_operacao.get())
-        if isinstance(conta, ContaCorrente):
-            valor -= valor * (self.banco_em_uso.taxa_cc / 100)
-        conta.deposita(valor)
-        self.janela_contas()
-        self.top_operacoes.destroy()
+        if valor == '':
+            messagebox.showerror('Aviso', 'Digite o valor desejado', parent=self.top_operacoes)
+        else:
+            if isinstance(conta, ContaCorrente):
+                valor -= valor * (self.banco_em_uso.taxa_cc / 100)
+            if messagebox.askokcancel('Confirmação', f'Confirma o depósito no valor de R$ {valor:.2f}?', parent=self.top_operacoes):
+                conta.deposita(valor)
+                self.janela_contas()
+                self.top_operacoes.destroy()
 
     def operacao_sacar(self):
         conta = [c for c in self.banco_em_uso.contas if c.id == self.contas_selecionadas[0][0][0]][0]
         valor = float(self.valor_operacao.get())
-        if isinstance(conta, ContaCorrente):
-            valor += valor * (self.banco_em_uso.taxa_cc / 100)
-        if conta.saca(valor):
-            self.janela_contas()
-            self.top_operacoes.destroy()
+        if valor == '':
+            messagebox.showerror('Aviso', 'Digite o valor desejado', parent=self.top_operacoes)
         else:
-            messagebox.showinfo('Aviso', 'Saldo insuficiente!')
+            if isinstance(conta, ContaCorrente):
+                valor += valor * (self.banco_em_uso.taxa_cc / 100)
+            if messagebox.askokcancel('Confirmação', f'Confirma o saque no valor de R$ {valor:.2f}?', parent=self.top_operacoes):
+                if conta.saca(valor):
+                    self.janela_contas()
+                    self.top_operacoes.destroy()
+                else:
+                    messagebox.showinfo('Aviso', 'Saldo insuficiente!', parent=self.top_operacoes)
 
     def extrato(self):
         self.contas_selecionadas = [(self.tvw_contas.item(conta, 'values'), conta) for conta in self.tvw_contas.selection()]

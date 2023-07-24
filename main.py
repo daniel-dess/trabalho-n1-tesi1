@@ -15,30 +15,28 @@ class Tela():
         self.janela.state('zoomed')
         self.janela.minsize(800, 600)
         self.janela.config(background='#4D8EBB')
-        
-        #----------------------------
-        b1 = Banco('123', 'Gringotes')
-        b2 = Banco('231', 'Banco do Brasil')
-        b3 = Banco('312', 'Banco da Ufac')
-        #----------------------------
-        self.banco_em_uso = b2
-        #----------------------------
-        Banco._bancos = [b1, b2, b3]
-        #----------------------------
-        cli1 = Cliente('Daniel', 'Rua dos Bobos, nº 0', '123')
-        cli2 = Cliente('Erika', 'Rua Carioca, nº 42', '321')
-        cli3 = Cliente('Jo Cely', 'Rua dos Doces, nº 3', '312')
-        #----------------------------
-        b1._clientes = [cli1, cli2]
-        b2.clientes.append(cli3)
-        #----------------------------
-        c1 = ContaCorrente(cli1)
-        c2 = ContaPoupanca(cli2)
-        c3 = ContaCorrente(cli3)
-        #----------------------------
-        b1._contas = [c1, c2]
-        b2._contas = [c3]
-        #----------------------------
+        # ----------------------------
+        # b1 = Banco('123', 'Gringotes')
+        # b2 = Banco('231', 'Banco do Brasil')
+        # b3 = Banco('312', 'Banco da Ufac')
+        # #----------------------------
+        # self.banco_em_uso = b2
+        # #----------------------------
+        # Banco._bancos = [b1, b2, b3]
+        # #----------------------------
+        # cli1 = Cliente('Daniel', 'Rua dos Bobos, nº 0', '123')
+        # cli2 = Cliente('Erika', 'Rua Carioca, nº 42', '321')
+        # cli3 = Cliente('Jo Cely', 'Rua dos Doces, nº 3', '312')
+        # # #----------------------------
+        # b1._clientes = [cli1, cli2]
+        # b2.clientes.append(cli3)
+        # #----------------------------
+        # c1 = ContaCorrente(cli1)
+        # c2 = ContaPoupanca(cli2)
+        # c3 = ContaCorrente(cli3)
+        # #----------------------------
+        # b1._contas = [c1, c2]
+        # b2._contas = [c3]
         
         self.frm = tk.Frame(self.janela, background='white', width=800)
         self.frm.pack(fill=tk.Y, expand=True)
@@ -53,6 +51,9 @@ class Tela():
 
     # Banco    
     def janela_bancos(self):
+        
+        self.limpar_tela(self.frm)
+        
         
         if Banco._bancos == []:
             
@@ -85,8 +86,6 @@ class Tela():
 
             self.config_text(tlv_bv)
         
-        self.limpar_tela(self.frm)
-                
         self.frm.grid_rowconfigure(0, weight=1)
         self.frm.grid_rowconfigure(1, weight=1)
         self.frm.grid_rowconfigure(2, weight=1)
@@ -134,6 +133,7 @@ class Tela():
             else:
                 valores = self.tvw_bancos.item(selecao, 'values')
                 self.banco_em_uso = [banco for banco in Banco._bancos if valores[0] == banco.numero][0]
+                messagebox.showinfo('Aviso', f'Banco {self.banco_em_uso.nome} está em uso!')
                 self.janela_bancos()
         
         btn_cadastrar_banco = tk.Button(frm_botoes_bancos, text='Cadastrar novo banco', command=self.cadastrar_banco)
@@ -144,7 +144,7 @@ class Tela():
         btn_selecionar_banco.grid(row=2, column=0, padx=5, pady=5)
         
         self.config_text(self.frm)
-        
+     
     def cadastrar_banco(self):
 
         self.tlv_bancos = tk.Toplevel()
@@ -185,9 +185,8 @@ class Tela():
             self.banco_em_uso = Banco(numero_banco, nome_banco)
             Banco._bancos.append(self.banco_em_uso)
             messagebox.showinfo('Confirmação', f'Banco {self.banco_em_uso.nome} cadastrado com sucesso!', parent=self.tlv_bancos)
-            self.tlv_bancos.destroy()
-            #----------------------------
             self.janela_bancos()
+            self.tlv_bancos.destroy()
     
     def editar_banco(self):
         
@@ -511,19 +510,17 @@ class Tela():
             self.config_text(self.frm)
     
     def abrir_conta(self):
-        try:
-            contas_selecionadas = [self.tvw_contas.item(conta, 'values') for conta in self.tvw_contas.selection()]
-            if len(contas_selecionadas) == 1:
-                conta = [c for c in self.banco_em_uso.contas if c.id == contas_selecionadas[0][0]][0]
-                if not conta.status:
-                    messagebox.showinfo('Aviso', f'A conta nº {conta.id} foi reaberta!')
-                    conta.status = True
-                    self.janela_contas()
-            elif len(contas_selecionadas) > 1:
-                messagebox.showinfo('Aviso', 'Selecione apenas uma conta para reabrir')
-            else:
-                raise AttributeError
-        except AttributeError:
+        self.janela_contas()
+        contas_selecionadas = [self.tvw_contas.item(conta, 'values') for conta in self.tvw_contas.selection()]
+        if len(contas_selecionadas) == 1:
+            conta = [c for c in self.banco_em_uso.contas if c.id == contas_selecionadas[0][0]][0]
+            if not conta.status:
+                messagebox.showinfo('Aviso', f'A conta nº {conta.id} foi reaberta!')
+                conta.status = True
+                self.janela_contas()
+        elif len(contas_selecionadas) > 1:
+            messagebox.showinfo('Aviso', 'Selecione apenas uma conta para reabrir')
+        else:
             self.top_abrir_conta = tk.Toplevel()
             self.top_abrir_conta.grab_set()
             self.top_abrir_conta.geometry('450x450')
@@ -560,11 +557,12 @@ class Tela():
             self.config_text(self.top_abrir_conta)
 
     def confirmar_abrir_conta(self):
+        print(self.tipo_conta.get())
         titular = [cli for cli in self.banco_em_uso.clientes if self.cbx_titular_conta.get().split(' - ')[0] == cli.id][0]
-        if not titular or self.tipo_conta == '':
+        if not titular or self.tipo_conta.get() == '':
             messagebox.showinfo('Aviso', 'Por favor, todos os campos são obrigatórios.')
         else:
-            if self.tipo_conta == 'cc':
+            if self.tipo_conta.get() == 'cc':
                 conta = ContaCorrente(titular)
             else:
                 conta = ContaPoupanca(titular)

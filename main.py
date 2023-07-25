@@ -8,43 +8,20 @@ from conta_poupanca import ContaPoupanca
 
 class Tela():
     
-    
     # Tela inicial
     def __init__(self, master):
         self.janela = master
         self.janela.title('Sistema de Gerenciamento Bancário')
         self.janela.state('zoomed')
         self.janela.minsize(800, 600)
-        self.janela.config(background='#4D8EBB')
-        # ----------------------------
-        b1 = Banco('123', 'Gringotes')
-        b2 = Banco('231', 'Banco do Brasil')
-        b3 = Banco('312', 'Banco da Ufac')
-        #----------------------------
-        self.banco_em_uso = b2
-        #----------------------------
-        Banco._bancos = [b1, b2, b3]
-        #----------------------------
-        cli1 = Cliente('Daniel', 'Rua dos Bobos, nº 0', '123')
-        cli2 = Cliente('Erika', 'Rua Carioca, nº 42', '321')
-        cli3 = Cliente('Jo Cely', 'Rua dos Doces, nº 3', '312')
-        # #----------------------------
-        b1._clientes = [cli1, cli2]
-        b2.clientes.append(cli3)
-        #----------------------------
-        c1 = ContaCorrente(cli1)
-        c2 = ContaPoupanca(cli2)
-        c3 = ContaCorrente(cli3)
-        #----------------------------
-        b1._contas = [c1, c2]
-        b2._contas = [c3]
+        self.s = 0
         
         self.frm = tk.Frame(self.janela, background='white', width=800)
         self.frm.pack(fill=tk.Y, expand=True)
         self.frm.grid_columnconfigure(0, minsize=800)
         
         estilo_treeview = ttk.Style()
-        estilo_treeview.configure('Treeview', font=('Century Schoolbook', 10))
+        estilo_treeview.configure('Treeview', font=('Constantia', 10))
         
         self.menu()
         
@@ -55,37 +32,40 @@ class Tela():
         
         self.limpar_tela(self.frm)
         
-        
         if Banco._bancos == []:
             
-            tlv_bv = tk.Toplevel()
-            tlv_bv.title('Boas Vindas!')
-            tlv_bv.geometry('500x400')
-            tlv_bv.grab_set()
-            
-            tlv_bv.grid_rowconfigure(0, weight=1)
-            tlv_bv.grid_rowconfigure(1, weight=1)
-            tlv_bv.grid_rowconfigure(2, weight=1)
-            tlv_bv.grid_rowconfigure(3, weight=1)
-            tlv_bv.grid_columnconfigure(0, weight=1)
-            
-            lbl1 = tk.Label(tlv_bv, text='Bem-vindo ao nosso sistema!')
-            lbl1.grid(row=0, column=0, pady=20)
-            
-            lbl2 = tk.Label(tlv_bv, text='Aqui você pode realizar diversas operações como gerenciar clientes e contas, bem como definir taxas e serviços.', wraplength=250)
-            lbl2.grid(row=1, column=0, pady=20)
-            
-            lbl3 = tk.Label(tlv_bv, text='Para iniciar, cadastre um banco para realizar as operações!', wraplength=250)
-            lbl3.grid(row=2, column=0, pady=20)
-            
-            def comando():
-                self.cadastrar_banco()
-                tlv_bv.destroy()
-            
-            btn = tk.Button(tlv_bv, text='OK', command=comando)
-            btn.grid(row=3, column=0, pady=20)
+            if self.s == 0:
+                self.s = 1
+                tlv_bv = tk.Toplevel()
+                tlv_bv.title('Boas Vindas!')
+                tlv_bv.geometry('500x400')
+                tlv_bv.grab_set()
+                
+                tlv_bv.grid_rowconfigure(0, weight=1)
+                tlv_bv.grid_rowconfigure(1, weight=1)
+                tlv_bv.grid_rowconfigure(2, weight=1)
+                tlv_bv.grid_rowconfigure(3, weight=1)
+                tlv_bv.grid_columnconfigure(0, weight=1)
+                
+                lbl1 = tk.Label(tlv_bv, text='Bem-vindo ao nosso sistema!')
+                lbl1.grid(row=0, column=0, pady=20)
+                
+                lbl2 = tk.Label(tlv_bv, text='Aqui você pode realizar diversas operações como gerenciar clientes e contas, bem como definir taxas e serviços.', wraplength=250)
+                lbl2.grid(row=1, column=0, pady=20)
+                
+                lbl3 = tk.Label(tlv_bv, text='Para iniciar, cadastre um banco para realizar as operações!', wraplength=250)
+                lbl3.grid(row=2, column=0, pady=20)
+                
+                def comando():
+                    self.cadastrar_banco()
+                    tlv_bv.destroy()
+                
+                btn = tk.Button(tlv_bv, text='OK', command=comando)
+                btn.grid(row=3, column=0, pady=20)
 
-            self.config_text(tlv_bv)
+                self.config_text(tlv_bv)
+            else:
+                self.cadastrar_banco()
         
         self.frm.grid_rowconfigure(0, weight=1)
         self.frm.grid_rowconfigure(1, weight=1)
@@ -147,9 +127,9 @@ class Tela():
         self.config_text(self.frm)
      
     def cadastrar_banco(self):
-
+        
         self.top_cadastrar_banco = tk.Toplevel()
-        self.top_cadastrar_banco.title('Cadastro Banco')
+        self.top_cadastrar_banco.title('Cadastrar Banco')
         self.top_cadastrar_banco.geometry('450x450')
         self.top_cadastrar_banco.grab_set()
         self.top_cadastrar_banco.grid_columnconfigure(0, weight=1)
@@ -198,6 +178,7 @@ class Tela():
         self.item_selecionado = self.tvw_bancos.selection()
         
         if len(self.item_selecionado) > 1:
+            self.janela_bancos()
             messagebox.showwarning('Aviso', 'Selecione apenas um item')
             
         elif len(self.item_selecionado) == 0 :
@@ -207,6 +188,7 @@ class Tela():
             self.valores = self.tvw_bancos.item(self.item_selecionado, 'values')
             self.banco_selecionado = [banco for banco in Banco._bancos if self.valores[0] == banco.numero][0]
             self.top_editar_banco = tk.Toplevel()
+            self.top_editar_banco.title('Editar Banco')
             self.top_editar_banco.geometry('450x450')
             self.top_editar_banco.grab_set()
             self.top_editar_banco.grid_columnconfigure(0, weight=1)
@@ -240,13 +222,15 @@ class Tela():
             lbl_taxa_cp.grid(row=0, column=0, sticky='w')
             self.ent_taxa_cp = tk.Entry(lbl_frm2)
             self.ent_taxa_cp.grid(row=0, column=1)
-            self.ent_taxa_cp.insert('end', self.banco_selecionado.taxa_cp)
+            if self.banco_selecionado.taxa_cp != 0.0:
+                self.ent_taxa_cp.insert('end', self.banco_selecionado.taxa_cp)
             
             lbl_taxa_cc = tk.Label(lbl_frm2, text='Taxa Serviço C/C: ')
             lbl_taxa_cc.grid(row=1, column=0, sticky='w')
             self.ent_taxa_cc = tk.Entry(lbl_frm2)
             self.ent_taxa_cc.grid(row=1, column=1)
-            self.ent_taxa_cc.insert('end', self.banco_selecionado.taxa_cc)
+            if self.banco_selecionado.taxa_cc != 0.0:
+                self.ent_taxa_cc.insert('end', self.banco_selecionado.taxa_cc)
             
             btn_confirmar = tk.Button(self.top_editar_banco, text='Confirmar', command=self.confirmar_edicao_banco)
             btn_confirmar.grid(row=2, column=0)
@@ -258,13 +242,13 @@ class Tela():
         cnpj = self.ent_cnpj.get()
         taxa_cp = self.ent_taxa_cp.get()
         taxa_cc = self.ent_taxa_cc.get()        
-        if nome == '' or cnpj == '' or taxa_cp == '' or taxa_cc == '':
+        if nome == '' or cnpj == '':
             messagebox.showinfo('Aviso', 'Por favor, todos os campos são obrigatórios.', parent=self.top_editar_banco)
         else:
             self.banco_selecionado.nome = nome
             self.banco_selecionado.numero = cnpj
-            self.banco_selecionado.taxa_cp = float(taxa_cp)
-            self.banco_selecionado.taxa_cc = float(taxa_cc)
+            self.banco_selecionado.taxa_cp = float(taxa_cp) if taxa_cp != '' else 0.0
+            self.banco_selecionado.taxa_cc = float(taxa_cc) if taxa_cc != '' else 0.0
             self.janela_bancos()
             self.top_editar_banco.destroy()
     
@@ -273,7 +257,7 @@ class Tela():
 
         if Banco._bancos == []:
             messagebox.showerror('Erro', 'Não há bancos cadastrados!')
-            self.janela_bancos()
+            return self.janela_bancos()
             
         else:
             
@@ -325,8 +309,20 @@ class Tela():
 
     def cadastrar_cliente(self):
         
+        if Banco._bancos == []:
+            messagebox.showerror('Erro', 'Não há bancos cadastrados!')
+            return self.janela_bancos()
+        
+        self.janela_clientes()
+        
         self.top_cadastrar_cliente = tk.Toplevel()
         self.top_cadastrar_cliente.grab_set()
+        self.top_cadastrar_cliente.title('Cadastrar Cliente')
+        self.top_cadastrar_cliente.geometry('450x450')
+        
+        self.top_cadastrar_cliente.grid_columnconfigure(0, weight=1)
+        self.top_cadastrar_cliente.grid_rowconfigure(0, weight=1)
+        self.top_cadastrar_cliente.grid_rowconfigure(1, weight=1)
         
         lbl_frm = tk.LabelFrame(self.top_cadastrar_cliente, text='Insira os dados do cliente', width=200, height=200)
         lbl_frm.grid(row=0, column=0)
@@ -347,25 +343,25 @@ class Tela():
         self.ent_cpf_cliente.grid(row=2, column=1, padx=10, pady=10)
         
         btn_confirmar_cadastro_cliente = tk.Button(self.top_cadastrar_cliente, text='Confirmar', command=self.confirmar_cadastro_cliente)
-        btn_confirmar_cadastro_cliente.grid(row=2, columnspan=2, padx=10, pady=10)
+        btn_confirmar_cadastro_cliente.grid(row=1, columnspan=2, padx=10, pady=10)
         
         self.config_text(self.top_cadastrar_cliente)
 
     def cpf_valido(self, cpf):
-        copia_cpf = [i for i in cpf if i.isdigit()]
+        copia_cpf = cpf
         if len(copia_cpf) == 11:
             cpf_valido = copia_cpf[:9]
             a = reduce(lambda x,y: x+y, [int(cpf_valido[i])*(10-i) for i in range(9)]) % 11
             if a < 2:
-                cpf_valido.append('0')
+                cpf_valido += '0'
             else:
-                cpf_valido = cpf_valido.append(str(11-a))
+                cpf_valido += str(11-a)
             b = reduce(lambda x,y: x+y, [int(cpf_valido[i])*(11-i) for i in range(10)]) %11
             if b < 2:
-                cpf_valido = cpf_valido.append('0')
+                cpf_valido += '0'
             else:
-                cpf_valido.append(str(11-b))
-                
+                cpf_valido += str(11-b)
+            
             if copia_cpf == cpf_valido:
                 return True
         return False
@@ -373,11 +369,14 @@ class Tela():
     def confirmar_cadastro_cliente(self):
         nome = self.ent_nome_cliente.get()
         endereco = self.ent_endereco.get()
-        cpf = self.ent_cpf_cliente.get()
+        cpf = ''.join([i for i in self.ent_cpf_cliente.get() if i.isdigit()])
         if nome == '' or endereco == '' or cpf == '':
             messagebox.showinfo('Aviso', 'Todos os campos são obrigatórios.')
         else:
-            if self.cpf_valido(cpf):
+            cpf_repetido = [cliente for cliente in self.banco_em_uso._clientes if cliente.cpf == cpf]
+            if cpf_repetido:
+                messagebox.showinfo('Aviso', 'Já existe um cliente cadastrado com o mesmo CPF.', parent=self.top_cadastrar_cliente)
+            elif self.cpf_valido(cpf):
                 self.cliente = Cliente(nome, endereco, cpf)
                 self.banco_em_uso.adicionar_cliente(self.cliente)
                 self.janela_clientes()
@@ -392,6 +391,7 @@ class Tela():
         
         if len(self.item_selecionado) > 1:
             messagebox.showwarning('Aviso', 'Selecione apenas um item')
+            self.janela_clientes()
         
         elif len(self.item_selecionado) == 0 :
             messagebox.showwarning('Aviso', 'Selecione um cliente para editar os dados')
@@ -400,6 +400,7 @@ class Tela():
             self.valores = self.tvw_clientes.item(self.item_selecionado, 'values')
             
             self.top_editar_cliente = tk.Toplevel()
+            self.top_editar_cliente.title('Editar Cliente')
             self.top_editar_cliente.grab_set()
             self.top_editar_cliente.geometry('450x450')
             
@@ -426,6 +427,7 @@ class Tela():
             self.ent_cpf_cliente = tk.Entry(lbl_frm)
             self.ent_cpf_cliente.grid(row=2, column=1, padx=5, pady=5)
             self.ent_cpf_cliente.insert('end', self.valores[3])
+            self.ent_cpf_cliente.config(state='readonly')
             
             btn_confirmar = tk.Button(lbl_frm, text='Confirmar', command=self.confirmar_edicao_cliente)
             btn_confirmar.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
@@ -436,19 +438,18 @@ class Tela():
         id = self.valores[0]
         nome = self.ent_nome_cliente.get()
         endereco = self.ent_endereco.get()
-        cpf = self.ent_cpf_cliente.get()
         
-        if nome == '' or endereco == '' or cpf == '':
-            messagebox.showinfo('Aviso', 'Por favor, todos os campos são obrigatórios.', parent=self.top_cadastrar_cliente)
+        if nome == '' or endereco == '':
+            messagebox.showinfo('Aviso', 'Por favor, todos os campos são obrigatórios.', parent=self.top_editar_cliente)
         else:
             for cliente in self.banco_em_uso.clientes:
                 if cliente.id == id:
                     cliente.nome = nome
                     cliente.endereco = endereco
-                    cliente.cpf = cpf
+                    messagebox.showinfo('Confirmação', f'Cliente {self.cliente.nome} cadastrado com sucesso!', parent=self.top_editar_cliente)
                     break
 
-            self.tvw_clientes.item(self.item_selecionado, values=(id, nome, endereco, cpf))
+            self.janela_clientes()
             self.top_editar_cliente.destroy()
 
     def remover_cliente(self):
@@ -475,7 +476,7 @@ class Tela():
 
         if Banco._bancos == []:
             messagebox.showerror('Erro', 'Não há bancos cadastrados!')
-            self.janela_bancos()
+            return self.janela_bancos()
             
         else:
             
@@ -518,8 +519,13 @@ class Tela():
             frm_botoes_contas.grid(row=2, column=0)
             
             def rendimento():
-                self.banco_em_uso.rendimento_cp()
-                self.janela_contas()
+                cps = [conta for conta in self.banco_em_uso.contas if isinstance(conta, ContaPoupanca)]
+                if cps == []:
+                    messagebox.showerror('Erro', 'Não há bancos cadastrados!')
+                else:
+                    self.banco_em_uso.rendimento_cp()
+                    self.janela_contas()
+                    messagebox.showinfo('Aviso', 'Rendimento aplicado em todas as contas poupanças!')
             
             btn_abrir_conta = tk.Button(frm_botoes_contas, text='Abrir', command=self.abrir_conta)
             btn_abrir_conta.grid(row=0, column=0, padx=5, pady=5)
@@ -538,8 +544,13 @@ class Tela():
         try:
             selecao = self.tvw_contas.selection()
         except:
+            if Banco._bancos == []:
+                messagebox.showerror('Erro', 'Não há bancos cadastrados!')
+                return self.janela_bancos()
             selecao = []
+
         self.janela_contas()
+
         if len(selecao) == 1:
             conta_selecionada = self.tvw_contas.item(selecao, 'values')
             conta = [c for c in self.banco_em_uso.contas if c.id == conta_selecionada[0]][0]
@@ -552,59 +563,61 @@ class Tela():
         elif len(selecao) > 1:
             messagebox.showinfo('Aviso', 'Selecione apenas uma conta para reabrir')
         else:
-            self.top_abrir_conta = tk.Toplevel()
-            self.top_abrir_conta.grab_set()
-            self.top_abrir_conta.geometry('450x450')
-            
-            self.top_abrir_conta.grid_columnconfigure(0, weight=1)
-            self.top_abrir_conta.grid_rowconfigure(0, weight=1)
-            self.top_abrir_conta.grid_rowconfigure(1, weight=1)
-            
             lista_clientes = [f'{cliente.id} - {cliente.nome}' for cliente in self.banco_em_uso.clientes]
-            
-            lbl_frm1 = tk.LabelFrame(self.top_abrir_conta, text='Selecione um cliente para titular da conta')
-            lbl_frm1.grid(row=0, column=0)
-            
-            lbl_frm1.grid_columnconfigure(0, weight=1)
-            lbl_frm1.grid_rowconfigure(0, weight=1)
-            lbl_frm1.grid_rowconfigure(1, weight=1)
-            
-            self.cbx_titular_conta = ttk.Combobox(lbl_frm1, values=lista_clientes)
-            self.cbx_titular_conta.grid(row=0, column=0, padx=5, pady=5)
-            
-            lbl_frm2 = tk.LabelFrame(lbl_frm1, text='Tipo de conta')
-            lbl_frm2.grid(row=1, column=0, padx=5, pady=5)
-            self.tipo_conta = tk.StringVar()
-            self.tipo_conta.set(None)
-            self.tipo_conta_corrente = tk.Radiobutton(lbl_frm2, variable=self.tipo_conta, text='Corrente', value='cc')
-            self.tipo_conta_corrente.grid()
-            self.tipo_conta_poupanca = tk.Radiobutton(lbl_frm2, variable=self.tipo_conta, text='Poupança', value='cp')
-            self.tipo_conta_poupanca.grid()
-            
-            btn_abrir_conta = Button(self.top_abrir_conta, text='Abrir Conta', command=self.confirmar_abrir_conta)
-            btn_abrir_conta.grid()
-            
-            self.config_text(lbl_frm1)
-            self.config_text(self.top_abrir_conta)
+            if lista_clientes == []:
+                messagebox.showinfo('Aviso', f'Não é possível abrir uma conta pois o Banco {self.banco_em_uso.nome} ainda não possui clientes cadastrados.')
+            else:
+                self.top_abrir_conta = tk.Toplevel()
+                self.top_abrir_conta.title('Abrir Conta')
+                self.top_abrir_conta.grab_set()
+                self.top_abrir_conta.geometry('450x450')
+                
+                self.top_abrir_conta.grid_columnconfigure(0, weight=1)
+                self.top_abrir_conta.grid_rowconfigure(0, weight=1)
+                self.top_abrir_conta.grid_rowconfigure(1, weight=1)
+                
+                lbl_frm1 = tk.LabelFrame(self.top_abrir_conta, text='Selecione um cliente para titular da conta')
+                lbl_frm1.grid(row=0, column=0)
+                
+                lbl_frm1.grid_columnconfigure(0, weight=1)
+                lbl_frm1.grid_rowconfigure(0, weight=1)
+                lbl_frm1.grid_rowconfigure(1, weight=1)
+                
+                self.cbx_titular_conta = ttk.Combobox(lbl_frm1, values=lista_clientes)
+                self.cbx_titular_conta.grid(row=0, column=0, padx=5, pady=5)
+                
+                lbl_frm2 = tk.LabelFrame(lbl_frm1, text='Tipo de conta')
+                lbl_frm2.grid(row=1, column=0, padx=5, pady=5)
+                self.tipo_conta = tk.StringVar()
+                self.tipo_conta.set(0)
+                self.tipo_conta_corrente = tk.Radiobutton(lbl_frm2, variable=self.tipo_conta, text='Corrente', value='cc')
+                self.tipo_conta_corrente.grid()
+                self.tipo_conta_poupanca = tk.Radiobutton(lbl_frm2, variable=self.tipo_conta, text='Poupança', value='cp')
+                self.tipo_conta_poupanca.grid()
+                
+                btn_abrir_conta = Button(self.top_abrir_conta, text='Abrir Conta', command=self.confirmar_abrir_conta)
+                btn_abrir_conta.grid()
+                
+                self.config_text(lbl_frm1)
+                self.config_text(self.top_abrir_conta)
 
     def confirmar_abrir_conta(self):
-        print(self.tipo_conta.get())
-        titular = [cli for cli in self.banco_em_uso.clientes if self.cbx_titular_conta.get().split(' - ')[0] == cli.id][0]
-        if not titular or self.tipo_conta.get() == '':
-            messagebox.showinfo('Aviso', 'Por favor, todos os campos são obrigatórios.')
+        cliente = self.cbx_titular_conta.get()
+        tipo_conta = self.tipo_conta.get()
+        if cliente == '' or tipo_conta == '0':
+            messagebox.showinfo('Aviso', 'Por favor, todos os campos são obrigatórios.', parent=self.top_abrir_conta)
         else:
-            if self.tipo_conta.get() == 'cc':
+            titular = [cli for cli in self.banco_em_uso.clientes if cliente.split(' - ')[0] == cli.id][0]
+            if tipo_conta == 'cc':
                 conta = ContaCorrente(titular)
             else:
                 conta = ContaPoupanca(titular)
-            
             self.banco_em_uso.adicionar_conta(conta)
             self.top_abrir_conta.destroy()
             self.janela_contas()
 
     def encerrar_conta(self):
         selecao = [self.tvw_contas.item(conta, 'values') for conta in self.tvw_contas.selection()]
-        print(selecao)
         if len(selecao) == 0:
             messagebox.showinfo('Aviso', 'Selecione uma conta para encerrar!')
         elif len(selecao) > 1:
@@ -628,6 +641,7 @@ class Tela():
             self.conta_selecionada = [c for c in self.banco_em_uso.contas if c.id == self.contas_selecionadas[0][0][0]][0]
             if self.conta_selecionada.status:
                 self.top_operacoes = tk.Toplevel()
+                self.top_operacoes.title('Operações')
                 self.top_operacoes.grab_set()
                 self.top_operacoes.geometry('450x450')
                 
@@ -668,7 +682,9 @@ class Tela():
         else:
             if isinstance(conta, ContaCorrente):
                 valor -= valor * (self.banco_em_uso.taxa_cc / 100)
-            if messagebox.askokcancel('Confirmação', f'Confirma o depósito no valor de R$ {valor:.2f}?', parent=self.top_operacoes):
+            if valor < 0:
+                messagebox.showerror('Aviso', 'Valor inválido', parent=self.top_operacoes)
+            elif messagebox.askokcancel('Confirmação', f'Confirma o depósito no valor de R$ {valor:.2f}?', parent=self.top_operacoes):
                 conta.deposita(valor)
                 self.janela_contas()
                 self.top_operacoes.destroy()
@@ -681,12 +697,14 @@ class Tela():
         else:
             if isinstance(conta, ContaCorrente):
                 valor += valor * (self.banco_em_uso.taxa_cc / 100)
-            if messagebox.askokcancel('Confirmação', f'Confirma o saque no valor de R$ {valor:.2f}?', parent=self.top_operacoes):
-                if conta.saca(valor):
+            if valor < 0:
+                messagebox.showinfo('Aviso', 'Valor inválido!', parent=self.top_operacoes)
+            elif conta.saca(valor):
+                if messagebox.askokcancel('Confirmação', f'Confirma o saque no valor de R$ {valor:.2f}?', parent=self.top_operacoes):
                     self.janela_contas()
                     self.top_operacoes.destroy()
-                else:
-                    messagebox.showinfo('Aviso', 'Saldo insuficiente!', parent=self.top_operacoes)
+            else:
+                messagebox.showinfo('Aviso', 'Saldo insuficiente!', parent=self.top_operacoes)
 
     def extrato(self):
         self.contas_selecionadas = [(self.tvw_contas.item(conta, 'values'), conta) for conta in self.tvw_contas.selection()]
@@ -704,9 +722,10 @@ class Tela():
 # Configurações da tela
     def config_text(self, componente):
         componente.config(bg='white')
+        self.janela.config(background='#4D8EBB')
         for child in componente.winfo_children():
             try:
-                child.config(font=('Century Schoolbook', 12), bg=child.master.cget('bg'))
+                child.config(font=('Constantia', 12), bg=child.master.cget('bg'))
                 if isinstance(child, tk.Button):
                     child.config(bg='#1F485E', fg='white', width=20)
                 if child.winfo_children():
@@ -736,10 +755,15 @@ class Tela():
         self.janela.config(menu=menu)
 
     def limpar_tela(self, tela):
-        for i in range(tela.grid_size()[1]):
-            tela.grid_rowconfigure(i, weight=0)
-        for child in self.frm.winfo_children():
-            child.destroy()
+        try:
+            for i in range(tela.grid_size()[1]):
+                tela.grid_rowconfigure(i, weight=0)
+        except: pass
+        try:
+            for child in self.frm.winfo_children():
+                child.destroy()
+        except:
+            pass
 
 app = tk.Tk()
 janelaPrincipal = Tela(app)

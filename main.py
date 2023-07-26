@@ -13,8 +13,8 @@ class Tela():
           # Configurações iniciais da janela principal
         self.janela = master
         self.janela.title('Sistema de Gerenciamento Bancário')
-        self.janela.state('zoomed')
-        self.janela.minsize(800, 600)
+        
+        self.janela.minsize(600, 600)
         self.s = 0
         
         self.frm = tk.Frame(self.janela, background='white', width=800)
@@ -115,7 +115,7 @@ class Tela():
             else:
                 valores = self.tvw_bancos.item(selecao, 'values')
                 self.banco_em_uso = [banco for banco in Banco._bancos if valores[0] == banco.numero][0]
-                messagebox.showinfo(f'Banco {self.banco_em_uso.nome} está em uso!')
+                messagebox.showinfo('Aviso', f'Banco {self.banco_em_uso.nome} está em uso!')
                 self.janela_bancos()
         
         btn_cadastrar_banco = tk.Button(frm_botoes_bancos, text='Cadastrar novo banco', command=self.cadastrar_banco)
@@ -756,6 +756,7 @@ class Tela():
         self.janela.config(menu=menu)
 
     def limpar_tela(self, tela):
+        self.janela.state('zoomed')
         try:
             for i in range(tela.grid_size()[1]):
                 tela.grid_rowconfigure(i, weight=0)

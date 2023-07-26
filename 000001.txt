@@ -1,0 +1,5 @@
+26-07-2023,deposito,95.00
+26-07-2023,saque,52.50
+
+
+Saldo Total da Conta: R$ 42.50

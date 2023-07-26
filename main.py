@@ -10,6 +10,7 @@ class Tela():
     
     # Tela inicial
     def __init__(self, master):
+          # Configurações iniciais da janela principal
         self.janela = master
         self.janela.title('Sistema de Gerenciamento Bancário')
         self.janela.state('zoomed')
@@ -114,7 +115,7 @@ class Tela():
             else:
                 valores = self.tvw_bancos.item(selecao, 'values')
                 self.banco_em_uso = [banco for banco in Banco._bancos if valores[0] == banco.numero][0]
-                messagebox.showinfo('Aviso', f'Banco {self.banco_em_uso.nome} está em uso!')
+                messagebox.showinfo(f'Banco {self.banco_em_uso.nome} está em uso!')
                 self.janela_bancos()
         
         btn_cadastrar_banco = tk.Button(frm_botoes_bancos, text='Cadastrar novo banco', command=self.cadastrar_banco)
@@ -130,7 +131,7 @@ class Tela():
         
         self.top_cadastrar_banco = tk.Toplevel()
         self.top_cadastrar_banco.title('Cadastrar Banco')
-        self.top_cadastrar_banco.geometry('450x450')
+        self.top_cadastrar_banco.geometry('500x400')
         self.top_cadastrar_banco.grab_set()
         self.top_cadastrar_banco.grid_columnconfigure(0, weight=1)
         self.top_cadastrar_banco.grid_rowconfigure(0, weight=1)
@@ -161,11 +162,11 @@ class Tela():
         nome_banco = self.ent_nome_banco.get()
         
         if numero_banco == '' or nome_banco == '':
-            messagebox.showerror('Dados Incompletos', 'Os campos Razão Social e CNPJ são obrigatórios!', parent=self.top_cadastrar_banco)
+            messagebox.showerror('Dados Incompletos', ' Dados incompletos, os campos Razão Social e CNPJ são obrigatórios!', parent=self.top_cadastrar_banco)
         else:
             mesmo_cnpj = [banco for banco in Banco._bancos if banco.numero == numero_banco]
             if mesmo_cnpj:
-                messagebox.showerror('Banco existente', 'Já existe um banco com o mesmo CNPJ!', parent=self.top_cadastrar_banco)
+                messagebox.showerror('Banco existente', 'Já existe um banco com o mesmo CNPJ!\n Por favor, verifique o CNPJ informado e tente novamente.', parent=self.top_cadastrar_banco)
             else:
                 self.banco_em_uso = Banco(numero_banco, nome_banco)
                 Banco._bancos.append(self.banco_em_uso)
@@ -189,7 +190,7 @@ class Tela():
             self.banco_selecionado = [banco for banco in Banco._bancos if self.valores[0] == banco.numero][0]
             self.top_editar_banco = tk.Toplevel()
             self.top_editar_banco.title('Editar Banco')
-            self.top_editar_banco.geometry('450x450')
+            self.top_editar_banco.geometry('500x400')
             self.top_editar_banco.grab_set()
             self.top_editar_banco.grid_columnconfigure(0, weight=1)
             self.top_editar_banco.grid_rowconfigure(0, weight=1)
@@ -318,7 +319,7 @@ class Tela():
         self.top_cadastrar_cliente = tk.Toplevel()
         self.top_cadastrar_cliente.grab_set()
         self.top_cadastrar_cliente.title('Cadastrar Cliente')
-        self.top_cadastrar_cliente.geometry('450x450')
+        self.top_cadastrar_cliente.geometry('500x400')
         
         self.top_cadastrar_cliente.grid_columnconfigure(0, weight=1)
         self.top_cadastrar_cliente.grid_rowconfigure(0, weight=1)
@@ -402,7 +403,7 @@ class Tela():
             self.top_editar_cliente = tk.Toplevel()
             self.top_editar_cliente.title('Editar Cliente')
             self.top_editar_cliente.grab_set()
-            self.top_editar_cliente.geometry('450x450')
+            self.top_editar_cliente.geometry('500x400')
             
             self.top_editar_cliente.grid_columnconfigure(0, weight=1)
             self.top_editar_cliente.grid_rowconfigure(0, weight=1)
@@ -570,7 +571,7 @@ class Tela():
                 self.top_abrir_conta = tk.Toplevel()
                 self.top_abrir_conta.title('Abrir Conta')
                 self.top_abrir_conta.grab_set()
-                self.top_abrir_conta.geometry('450x450')
+                self.top_abrir_conta.geometry('500x400')
                 
                 self.top_abrir_conta.grid_columnconfigure(0, weight=1)
                 self.top_abrir_conta.grid_rowconfigure(0, weight=1)
@@ -643,7 +644,7 @@ class Tela():
                 self.top_operacoes = tk.Toplevel()
                 self.top_operacoes.title('Operações')
                 self.top_operacoes.grab_set()
-                self.top_operacoes.geometry('450x450')
+                self.top_operacoes.geometry('500x400')
                 
                 self.top_operacoes.grid_columnconfigure(0, weight=1)
                 self.top_operacoes.grid_rowconfigure(0, weight=1)
